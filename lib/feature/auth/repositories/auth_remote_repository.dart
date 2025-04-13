@@ -6,7 +6,7 @@ import '../../../core/data_class/repository/repository.dart';
 
 class RestAuthRepostory implements AuthRepository {
   @override
-  final String baseUrl = 'http://10.0.2.2:8000/api/v1/users';
+  final String serverUrl = 'http://10.0.2.2:8000/api/v1/users';
 
   @override
   Future<Map<String, dynamic>> signUp({
@@ -17,7 +17,7 @@ class RestAuthRepostory implements AuthRepository {
   }) async {
     try {
       // final urlPath = Uri.http(uriAuthority, localURL);
-      final urlPath = Uri.parse('$baseUrl/signup');
+      final urlPath = Uri.parse('$serverUrl/signup');
       final response = await http.post(
         urlPath,
         headers: {'Content-Type': 'application/json'},
@@ -50,7 +50,7 @@ class RestAuthRepostory implements AuthRepository {
   @override
   Future<Map<String, dynamic>> login(
       {required String email, required String password}) async {
-    final urlPath = Uri.parse('$baseUrl/login');
+    final urlPath = Uri.parse('$serverUrl/login');
     try {
       final response = await http.post(
         urlPath,

@@ -4,7 +4,7 @@ abstract class AuthRepository {
   factory AuthRepository() => RestAuthRepostory();
 
   /// Base url
-  final String baseUrl = "";
+  final String serverUrl = "";
 
   /// Create a new user account
   Future<Map<String, dynamic>> signUp({

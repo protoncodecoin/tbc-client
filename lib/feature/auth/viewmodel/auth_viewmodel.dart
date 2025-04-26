@@ -74,7 +74,7 @@ class AuthViewmodel extends AutoDisposeAsyncNotifier<Object?> {
 
       final value = switch (res) {
         // TODO: use status code instead of error message
-        Left(value: final error) => state = error.message == "Unauthorized User"
+        Left(value: final error) => state = error.statusCode == 401
             ? state = AsyncValue.data(null)
             : state = AsyncValue.error(error, StackTrace.current),
         Right(value: final value) => _getSucessData(value)

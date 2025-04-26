@@ -1,10 +1,27 @@
 import 'package:client/feature/auth/view/pages/signup.dart';
+import 'package:client/feature/auth/viewmodel/auth_viewmodel.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/theme.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final container = ProviderContainer();
+  await container
+      .read(authRegisterViewModelProvider.notifier)
+      .initSharePreferences();
+  final userModel = await container
+      .read(authRegisterViewModelProvider.notifier)
+      .getCurrentUserData();
+
+  print(userModel);
+  runApp(
+    UncontrolledProviderScope(
+      container: container,
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {

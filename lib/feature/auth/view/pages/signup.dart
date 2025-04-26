@@ -36,10 +36,10 @@ class _SignupPageState extends ConsumerState<SignupPage> {
   @override
   Widget build(BuildContext context) {
     final isLoading =
-        ref.watch(authRegisterViewModelProvider).isLoading == true;
+        ref.watch(authViewModelProvider.select((val) => val.isLoading == true));
 
     ref.listen(
-      authRegisterViewModelProvider,
+      authViewModelProvider,
       (previous, next) {
         next.when(
           data: (data) {
@@ -129,14 +129,11 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                       buttonText: "Sign Up",
                       onTab: () async {
                         if (formKey.currentState!.validate()) {
-                          ref
-                              .read(authRegisterViewModelProvider.notifier)
-                              .signUp(
-                                  username: _usernameController.text,
-                                  email: _emailController.text,
-                                  password: _passwordController.text,
-                                  confirmPassword:
-                                      _confirmPasswordController.text);
+                          ref.read(authViewModelProvider.notifier).signUp(
+                              username: _usernameController.text,
+                              email: _emailController.text,
+                              password: _passwordController.text,
+                              confirmPassword: _confirmPasswordController.text);
                         }
                       },
                     ),

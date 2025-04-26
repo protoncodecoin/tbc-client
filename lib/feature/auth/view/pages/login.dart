@@ -5,6 +5,7 @@ import 'package:client/feature/auth/view/pages/signup.dart';
 import 'package:client/feature/auth/view/widgets/auth_button.dart';
 import 'package:client/feature/auth/view/widgets/form_field.dart';
 import 'package:client/feature/auth/viewmodel/auth_viewmodel.dart';
+import 'package:client/feature/home/view/pages/home_page.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -31,13 +32,19 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    final isLoading = ref.watch(authLoginViewModelProvider).isLoading == true;
+    final isLoading =
+        ref.watch(authViewModelProvider.select((val) => val.isLoading == true));
 
-    ref.listen(authLoginViewModelProvider, (_, next) {
+    ref.listen(authViewModelProvider, (_, next) {
       next.when(
           data: (data) {
             if (data != null) {
               showSnackMessage(context, "Login successful");
+
+              Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => const HomePage()),
+                  (_) => false);
             }
           },
           error: (error, stacktrace) {
@@ -116,7 +123,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       onTab: () async {
                         if (formKey.currentState!.validate()) {
                           // send data to server
-                          ref.read(authLoginViewModelProvider.notifier).login(
+                          ref.read(authViewModelProvider.notifier).login(
                               email: _emailController.text,
                               password: _passwordController.text);
                         }

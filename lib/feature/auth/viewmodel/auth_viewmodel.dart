@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:client/core/provider/current_user_provider.dart';
 import 'package:client/feature/auth/model/user_model.dart';
 import 'package:client/feature/auth/repositories/auth_local_repository.dart';
 import 'package:client/feature/auth/repositories/auth_remote_repository.dart';
@@ -8,22 +9,24 @@ import 'package:fpdart/fpdart.dart';
 
 import '../model/token_model.dart';
 
-final authRegisterViewModelProvider =
-    AsyncNotifierProvider.autoDispose<AuthRegisterViewmodel, UserModel?>(
-        AuthRegisterViewmodel.new);
+final authViewModelProvider =
+    AsyncNotifierProvider.autoDispose<AuthViewmodel, Object?>(
+        AuthViewmodel.new);
 
-final authLoginViewModelProvider =
-    AsyncNotifierProvider.autoDispose<AuthLoginViewModel, AccessTokenModel?>(
-        AuthLoginViewModel.new);
+// final authLoginViewModelProvider =
+//     AsyncNotifierProvider.autoDispose<AuthLoginViewModel, AccessTokenModel?>(
+//         AuthLoginViewModel.new);
 
-class AuthRegisterViewmodel extends AutoDisposeAsyncNotifier<UserModel?> {
+class AuthViewmodel extends AutoDisposeAsyncNotifier<Object?> {
   late RestAuthRepository _restAuthRepository;
   late AuthTokenPersistenceRepository _authTokenPersistenceRepository;
+  late CurrentUserNotifier _currentUserNotifier;
 
   @override
-  FutureOr<UserModel?> build() async {
+  FutureOr<Object?> build() async {
     _restAuthRepository = ref.watch(restAuthRepositoryProvider);
     _authTokenPersistenceRepository = ref.watch(authTokenPersistenceProvider);
+    _currentUserNotifier = ref.watch(currentUserNotifierProvider.notifier);
     // await _authTokenPersistenceRepository.init();
     return null;
   }
@@ -60,7 +63,7 @@ class AuthRegisterViewmodel extends AutoDisposeAsyncNotifier<UserModel?> {
   }
 
   /// Get User data from server
-  Future<UserModel?> getCurrentUserData() async {
+  Future<Object?> getCurrentUserData() async {
     state = AsyncValue.loading();
     final accessToken = _authTokenPersistenceRepository.getToken();
 
@@ -74,24 +77,12 @@ class AuthRegisterViewmodel extends AutoDisposeAsyncNotifier<UserModel?> {
         Left(value: final error) => state = error.message == "Unauthorized User"
             ? state = AsyncValue.data(null)
             : state = AsyncValue.error(error, StackTrace.current),
-        Right(value: final value) => state = AsyncValue.data(value)
+        Right(value: final value) => _getSucessData(value)
       };
 
       print(value);
       return value.value;
     }
-
-    return null;
-  }
-}
-
-/// Handle login
-class AuthLoginViewModel extends AutoDisposeAsyncNotifier<AccessTokenModel?> {
-  late RestAuthRepository _restAuthRepository;
-  late AuthTokenPersistenceRepository _authTokenPersistenceRepository;
-  @override
-  FutureOr<AccessTokenModel?> build() {
-    _restAuthRepository = ref.watch(restAuthRepositoryProvider);
 
     return null;
   }
@@ -113,8 +104,50 @@ class AuthLoginViewModel extends AutoDisposeAsyncNotifier<AccessTokenModel?> {
   }
 
   /// Saves access token in device storage
-  AsyncValue<AccessTokenModel?> _loginSuccess(AccessTokenModel accessToken) {
+  AsyncValue<Object?> _loginSuccess(AccessTokenModel accessToken) {
     _authTokenPersistenceRepository.setToken(accessToken.access_token);
+
+    // set the user to be used in the app
+    _currentUserNotifier.fetchPopulateUserState(accessToken);
     return state = AsyncValue.data(accessToken);
   }
+
+  AsyncValue<Object?> _getSucessData(UserModel user) {
+    _currentUserNotifier.addUser(user);
+    return state = AsyncValue.data(user);
+  }
 }
+
+// /// Handle login
+// class AuthLoginViewModel extends AutoDisposeAsyncNotifier<AccessTokenModel?> {
+//   late RestAuthRepository _restAuthRepository;
+//   late AuthTokenPersistenceRepository _authTokenPersistenceRepository;
+//   @override
+//   FutureOr<AccessTokenModel?> build() {
+//     _restAuthRepository = ref.watch(restAuthRepositoryProvider);
+
+//     return null;
+//   }
+
+//   /// Signs the user in if credentials provided is correct
+//   Future<void> login({required String email, required String password}) async {
+//     state = AsyncValue.loading();
+
+//     final res = await _restAuthRepository.login(
+//       email: email,
+//       password: password,
+//     );
+
+//     final value = switch (res) {
+//       Left(value: final error) => state =
+//           AsyncValue.error(error, StackTrace.current),
+//       Right(value: final ok) => _loginSuccess(ok)
+//     };
+//   }
+
+//   /// Saves access token in device storage
+//   AsyncValue<AccessTokenModel?> _loginSuccess(AccessTokenModel accessToken) {
+//     _authTokenPersistenceRepository.setToken(accessToken.access_token);
+//     return state = AsyncValue.data(accessToken);
+//   }
+// }

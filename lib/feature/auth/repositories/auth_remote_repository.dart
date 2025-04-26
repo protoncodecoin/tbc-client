@@ -52,7 +52,7 @@ class RestAuthRepository implements AuthRepository {
       if (response.statusCode == 400) {
         final errorMessage = jsonDecode(response.body) as Map<String, dynamic>;
 
-        return Left(AppError(errorMessage["detail"]));
+        return Left(AppError(errorMessage["detail"], response.statusCode));
       } else {
         return Left(AppError("Network error occurred"));
       }
@@ -84,9 +84,7 @@ class RestAuthRepository implements AuthRepository {
       if (response.statusCode == 400) {
         final errorMessage = jsonDecode(response.body) as Map<String, dynamic>;
         return Left(
-          AppError(
-            errorMessage["detail"],
-          ),
+          AppError(errorMessage["detail"], response.statusCode),
         );
       } else {
         // Undocumented error
@@ -113,19 +111,23 @@ class RestAuthRepository implements AuthRepository {
       if (response.statusCode == 400) {
         final errorMessage = jsonDecode(response.body) as Map<String, dynamic>;
         return Left(
-          AppError(
-            errorMessage["detail"],
-          ),
+          AppError(errorMessage["detail"], response.statusCode),
         );
       }
       if (response.statusCode == 401) {
-        return Left(AppError("Unauthorized User"));
+        return Left(
+          AppError("Unauthorized User", response.statusCode),
+        );
       } else {
         /// undocumented Error
         return Left(AppError("Network error occurred"));
       }
     } catch (e) {
-      return Left(AppError(e.toString()));
+      return Left(
+        AppError(
+          e.toString(),
+        ),
+      );
     }
   }
 }

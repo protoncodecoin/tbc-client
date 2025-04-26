@@ -1,5 +1,7 @@
-import 'package:client/feature/auth/view/pages/signup.dart';
+import 'package:client/core/provider/current_user_provider.dart';
+import 'package:client/feature/auth/view/pages/login.dart';
 import 'package:client/feature/auth/viewmodel/auth_viewmodel.dart';
+import 'package:client/feature/home/view/pages/home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -8,14 +10,9 @@ import 'core/theme.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final container = ProviderContainer();
-  await container
-      .read(authRegisterViewModelProvider.notifier)
-      .initSharePreferences();
-  final userModel = await container
-      .read(authRegisterViewModelProvider.notifier)
-      .getCurrentUserData();
+  await container.read(authViewModelProvider.notifier).initSharePreferences();
+  await container.read(authViewModelProvider.notifier).getCurrentUserData();
 
-  print(userModel);
   runApp(
     UncontrolledProviderScope(
       container: container,
@@ -24,17 +21,18 @@ void main() async {
   );
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currentUser = ref.watch(currentUserNotifierProvider);
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'The Beautiful Church',
       theme: ThemeV2.lightThemeMode,
       darkTheme: ThemeV2.darkThemeMode,
-      home: SignupPage(),
+      home: currentUser == null ? LoginPage() : HomePage(),
     );
   }
 }
